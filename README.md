@@ -1,15 +1,5 @@
 # React Quiz App
 
-## About
-
-Quiz app created using React.js | Vite.js
-
-## Demo
-
-[Live Demo](https://dogankocadayilar.github.io/react-quiz-app/)
-
-# React Quiz App
-
 https://dogankocadayilar.github.io/react-quiz-app/
 
 React Quiz App that access trivia questions from the [Open Trivia Database API](https://opentdb.com/) and score players based on their answers.
