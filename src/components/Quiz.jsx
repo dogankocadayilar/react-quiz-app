@@ -1,28 +1,16 @@
-import { useEffect, useState } from "react";
-import { parseData } from "../helpers/helpers";
+import { useState } from "react";
+import useFetch from "../hooks/useFetch";
 import Question from "./Question";
 
 function Quiz() {
-  const [quizzes, setQuizzes] = useState([]);
   const [showWarningMessage, setShowWarningMessage] = useState(false);
   const [numOfCorrectAnswers, setNumOfCorrectAnswers] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [isPlayAgainPressed, setIsPlayAgainPressed] = useState(false);
-
-  useEffect(() => {
-    fetch("https://opentdb.com/api.php?amount=5&type=multiple")
-      .then((resp) => resp.json())
-      .then((data) =>
-        setQuizzes(() => {
-          return data.results.map((result) => {
-            return parseData(result);
-          });
-        })
-      );
-  }, [isPlayAgainPressed]);
+  const [data, setData, loading] = useFetch(isPlayAgainPressed);
 
   function updateSelectedAnswer(id, answer) {
-    setQuizzes((prevState) => {
+    setData((prevState) => {
       return prevState.map((quiz) => {
         return quiz.id === id ? { ...quiz, selected_answer: answer } : quiz;
       });
@@ -30,14 +18,12 @@ function Quiz() {
   }
 
   function checkAnswers() {
-    const notAllAnswered = quizzes.some(
-      (quiz) => quiz.selected_answer === null
-    );
+    const notAllAnswered = data.some((quiz) => quiz.selected_answer === null);
     setShowWarningMessage(notAllAnswered);
 
     if (!notAllAnswered) {
       setNumOfCorrectAnswers(
-        quizzes.filter((quiz) => quiz.selected_answer === quiz.correct_answer)
+        data.filter((quiz) => quiz.selected_answer === quiz.correct_answer)
           .length
       );
       setShowResult(true);
@@ -47,24 +33,26 @@ function Quiz() {
   function playAgain() {
     setShowResult(false);
     setNumOfCorrectAnswers(0);
-    setQuizzes([]);
+    setData([]);
     setIsPlayAgainPressed((prevState) => !prevState);
   }
 
   return (
     <main>
-      {quizzes.map((quiz) => (
-        <Question
-          key={quiz.id}
-          {...quiz}
-          updateSelectedAnswer={updateSelectedAnswer}
-          showResult={showResult}
-        />
-      ))}
+      {loading && <h1>Loading...</h1>}
+      {!loading &&
+        data.map((quiz) => (
+          <Question
+            key={quiz.id}
+            {...quiz}
+            updateSelectedAnswer={updateSelectedAnswer}
+            showResult={showResult}
+          />
+        ))}
       {showWarningMessage && (
         <p className="warning-message">There are unanswered questions!</p>
       )}
-      {quizzes.length > 0 && !showResult && (
+      {!loading && data.length > 0 && !showResult && (
         <div className="center">
           <button className="check-answers-button" onClick={checkAnswers}>
             Check Answers
